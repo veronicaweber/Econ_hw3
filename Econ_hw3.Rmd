@@ -1,0 +1,82 @@
+---
+title: "Econ Homework 3"
+author: "Veronica Weber"
+date: "5/8/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+# Import dataset
+gas_tax <- read_csv("Homework 3 Data.csv") %>% 
+  clean_names
+
+# Plot high gas tax
+high_gas_plot <- ggplot(gas_tax, aes(x = q_high_gallons, y = price_dollars)) +
+  geom_point()
+
+# Plot low gas tax
+low_gas_plot <- ggplot(gas_tax, aes(x = q_low_gallons, y = price_dollars)) + 
+  geom_point()
+
+# Figure out regression upon both curves
+model_high <-lm(formula ="price_dollars ~ q_high_gallons", data = gas_tax)
+model_low <-lm(formula ="price_dollars ~ q_low_gallons", data = gas_tax)
+
+summary(model_high)
+summary(model_low)
+
+# Overlay regression model onto each graph
+# Model for High Gallons
+
+predict_gas_high <-function(q, model){
+  b0 <- model$coefficients["(Intercept)"]
+b1 <- model$coefficients["q_high_gallons"]
+predicted_gas <- b0+b1*q 
+return(predicted_gas)}
+
+predict_gas_low <-function(q, model){
+  b0 <- model$coefficients["(Intercept)"]
+b1 <- model$coefficients["price_dollars"]
+predicted_gas <- b0+b1*q 
+return(predicted_gas)}
+
+# Model for Low Gallons 
+# predict_gas_low <-function(q, model){
+#   b0 <- model$coefficients["(Intercept)"]
+# b1 <- model$coefficients["q_low_gallons"]
+# predicted_gas_low <- b0+b1*q
+# return(predicted_gas_low)
+
+# Create a vector from 0 to 455,600 (the highest volume of gas)
+# This will be the`quantity'axis on graphs
+
+q_vector <-seq(0, 455600, by= 100)
+
+gas_df <-data.frame(
+  gas_gallons <- q_vector,
+  predicted_gas_high <- predict_gas(q_vector, model_high),
+  predicted_gas_low <- predict_gas(q_vector, model_low))
+
+
+
+# Overlay on the graphs
+# High Gas
+high_gas_plot <- high_gas_plot +
+   geom_line(data = gas_df, aes(x=q_vector, y = predicted_high_price))
+        
+        
+plot_low <- plotB+geom_line(data = gas_df,aes(x=q_vector, y=predict_gas_low))
+
+
+
+
+
+
+```
+
