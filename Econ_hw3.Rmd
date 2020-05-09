@@ -12,70 +12,67 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(janitor)
-# Import dataset
-gas_tax <- read_csv("Homework 3 Data.csv") %>% 
-  clean_names
+library(devtools)
+library(ggthemes)
 
+# Import dataset
+gas_tax <- read_csv("Homework 3 Data.csv") %>%
+  clean_names
 # Plot high gas tax
 high_gas_plot <- ggplot(gas_tax, aes(x = q_high_gallons, y = price_dollars)) +
   geom_point()
-
 # Plot low gas tax
-low_gas_plot <- ggplot(gas_tax, aes(x = q_low_gallons, y = price_dollars)) + 
+low_gas_plot <- ggplot(gas_tax, aes(x = q_low_gallons, y = price_dollars)) +
   geom_point()
 
 # Figure out regression upon both curves
 model_high <-lm(formula ="price_dollars ~ q_high_gallons", data = gas_tax)
 model_low <-lm(formula ="price_dollars ~ q_low_gallons", data = gas_tax)
-
 summary(model_high)
 summary(model_low)
-
 # Overlay regression model onto each graph
 # Model for High Gallons
-
 predict_gas_high <-function(q, model){
-  b0 <- model$coefficients["(Intercept)"]
-b1 <- model$coefficients["q_high_gallons"]
-predicted_gas <- b0+b1*q 
-return(predicted_gas)}
-
+b0 <- model_high$coefficients["(Intercept)"]
+b1 <- model_high$coefficients["q_high_gallons"]
+predicted_gas <- b0+b1*q
+return(predicted_gas)
+}
 predict_gas_low <-function(q, model){
-  b0 <- model$coefficients["(Intercept)"]
-b1 <- model$coefficients["price_dollars"]
-predicted_gas <- b0+b1*q 
-return(predicted_gas)}
-
-# Model for Low Gallons 
-# predict_gas_low <-function(q, model){
-#   b0 <- model$coefficients["(Intercept)"]
-# b1 <- model$coefficients["q_low_gallons"]
-# predicted_gas_low <- b0+b1*q
-# return(predicted_gas_low)
-
+  b0 <- model_low$coefficients["(Intercept)"]
+b1 <- model_low$coefficients["q_low_gallons"]
+predicted_gas <- b0+b1*q
+return(predicted_gas)
+}
 # Create a vector from 0 to 455,600 (the highest volume of gas)
 # This will be the`quantity'axis on graphs
-
 q_vector <-seq(0, 455600, by= 100)
-
 gas_df <-data.frame(
   gas_gallons <- q_vector,
-  predicted_gas_high <- predict_gas(q_vector, model_high),
-  predicted_gas_low <- predict_gas(q_vector, model_low))
+  predicted_gas_high <- predict_gas_high(q_vector, model_high),
+  predicted_gas_low <- predict_gas_low(q_vector, model_low))
 
 
+# High Income Demand Curve
+highincome_plot <- high_gas_plot +
+  geom_line(data = gas_df, aes(x = q_vector, y = predicted_gas_high))
+high_gas_plot2 +
+  labs(title = "Demand Curve High Income Consumer", x = "Gallons of Gas", y = "Price (dollars)") + 
+  theme_light() +
+  coord_cartesian(y = c(3, 16),
+                  x = c(0, 455600)) + 
+  scale_y_continuous(breaks = c(3, 4, 5,6,7,8,9, 10, 11, 12,13,14,15, 16))
 
-# Overlay on the graphs
-# High Gas
-high_gas_plot <- high_gas_plot +
-   geom_line(data = gas_df, aes(x=q_vector, y = predicted_high_price))
-        
-        
-plot_low <- plotB+geom_line(data = gas_df,aes(x=q_vector, y=predict_gas_low))
+# Low Income Demand Curve
+lowincome_plot <- low_gas_plot +
+  geom_line(data = gas_df, aes(x = q_vector, y = predicted_gas_low))
 
-
-
-
+lowincome_plot + 
+  labs(title = "Demand Curve Low Income Consumer", x = "Gallons of Gas", y = "Price (dollars)") + 
+  theme_light() +
+  coord_cartesian(y = c(0, 12),
+                  x = c(0, 176750)) + 
+scale_y_continuous(breaks = c(0, 1, 2,3,4,5,6,7,8, 9, 10, 11, 12))
 
 
 ```
